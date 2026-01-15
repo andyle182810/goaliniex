@@ -27,8 +27,6 @@ It is designed for simplicity, correctness, and ease of integration in productio
 go get github.com/andyle182810/goaliniex
 ```
 
----
-
 ## 🚀 Quick Start
 
 ```go
@@ -78,8 +76,6 @@ Run tests:
 ```bash
 go test ./...
 ```
-
-## 🤝 Contributing
 
 ## 📬 Support
 
