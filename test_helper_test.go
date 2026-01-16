@@ -12,45 +12,6 @@ import (
 	"github.com/andyle182810/goaliniex"
 )
 
-func newTestClient(t *testing.T) *goaliniex.Client {
-	t.Helper()
-
-	privateKey, err := os.ReadFile("./alix-private-key.pem")
-	if err != nil {
-		t.Skipf("skipping test: unable to read private key: %v", err)
-	}
-
-	partnerCode := strings.TrimSpace(os.Getenv("ALIX_PARTNER_CODE"))
-	if partnerCode == "" {
-		t.Skip("skipping test: ALIX_PARTNER_CODE not set")
-	}
-
-	secretKey := strings.TrimSpace(os.Getenv("ALIX_SECRET_KEY"))
-	if secretKey == "" {
-		t.Skip("skipping test: ALIX_SECRET_KEY not set")
-	}
-
-	logger := slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
-		AddSource:   false,
-		Level:       slog.LevelDebug,
-		ReplaceAttr: nil,
-	}))
-
-	client, err := goaliniex.NewClient(
-		"https://sandbox.alixpay.com",
-		partnerCode,
-		secretKey,
-		privateKey,
-		goaliniex.WithDebug(true),
-		goaliniex.WithLogger(logger),
-	)
-	if err != nil {
-		t.Fatalf("failed to create client: %v", err)
-	}
-
-	return client
-}
-
 type mockHTTPClient struct {
 	response *http.Response
 	err      error
@@ -118,4 +79,43 @@ func newTestClientWithMock(httpClient goaliniex.HTTPClient) (*goaliniex.Client, 
 		testPrivateKey(),
 		goaliniex.WithHTTPClient(httpClient),
 	)
+}
+
+func newTestClient(t *testing.T) *goaliniex.Client {
+	t.Helper()
+
+	privateKey, err := os.ReadFile("./alix-private-key.pem")
+	if err != nil {
+		t.Skipf("skipping test: unable to read private key: %v", err)
+	}
+
+	partnerCode := strings.TrimSpace(os.Getenv("ALIX_PARTNER_CODE"))
+	if partnerCode == "" {
+		t.Skip("skipping test: ALIX_PARTNER_CODE not set")
+	}
+
+	secretKey := strings.TrimSpace(os.Getenv("ALIX_SECRET_KEY"))
+	if secretKey == "" {
+		t.Skip("skipping test: ALIX_SECRET_KEY not set")
+	}
+
+	logger := slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
+		AddSource:   false,
+		Level:       slog.LevelDebug,
+		ReplaceAttr: nil,
+	}))
+
+	client, err := goaliniex.NewClient(
+		"https://sandbox.alixpay.com",
+		partnerCode,
+		secretKey,
+		privateKey,
+		goaliniex.WithDebug(true),
+		goaliniex.WithLogger(logger),
+	)
+	if err != nil {
+		t.Fatalf("failed to create client: %v", err)
+	}
+
+	return client
 }
