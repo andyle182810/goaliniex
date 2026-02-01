@@ -18,7 +18,7 @@ func TestIntegration_SubmitKyc_ValidRequest(t *testing.T) {
 	defer cancel()
 
 	req := &goaliniex.SubmitKycRequest{
-		UserEmail:        "tvugiang@gmail.com",
+		UserEmail:        getTestEmail(t),
 		FirstName:        "John",
 		LastName:         "Doe",
 		DateOfBirth:      "1990-01-01",
@@ -67,7 +67,7 @@ func TestIntegration_SubmitKyc_WithIDCard(t *testing.T) {
 	defer cancel()
 
 	req := &goaliniex.SubmitKycRequest{
-		UserEmail:        "zavytran1409+3@gmail.com",
+		UserEmail:        getTestEmail2(t),
 		FirstName:        "Jane",
 		LastName:         "Smith",
 		DateOfBirth:      "1985-05-15",
@@ -472,7 +472,7 @@ func TestIntegration_SubmitKyc_LongTimeout(t *testing.T) {
 	defer cancel()
 
 	req := &goaliniex.SubmitKycRequest{
-		UserEmail:        "tvugiang@gmail.com",
+		UserEmail:        getTestEmail(t),
 		FirstName:        "John",
 		LastName:         "Doe",
 		DateOfBirth:      "1990-01-01",

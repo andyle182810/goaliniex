@@ -63,6 +63,9 @@ Required environment variables:
 ```bash
 ALIX_PARTNER_CODE=your_partner_code
 ALIX_SECRET_KEY=your_secret_key
+ALIX_WEBHOOK_SECRET_KEY=your_webhook_secret_key
+ALIX_TEST_EMAIL=your_test_email@example.com
+ALIX_TEST_EMAIL_2=your_secondary_test_email@example.com  # optional
 ```
 
 Private key file:
