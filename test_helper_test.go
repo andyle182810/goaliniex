@@ -119,3 +119,43 @@ func newTestClient(t *testing.T) *goaliniex.Client {
 
 	return client
 }
+
+func getTestEmail(t *testing.T) string {
+	t.Helper()
+
+	email := strings.TrimSpace(os.Getenv("ALIX_TEST_EMAIL"))
+	if email == "" {
+		t.Skip("skipping test: ALIX_TEST_EMAIL not set")
+	}
+
+	return email
+}
+
+func getTestEmail2(t *testing.T) string {
+	t.Helper()
+
+	email := strings.TrimSpace(os.Getenv("ALIX_TEST_EMAIL_2"))
+	if email == "" {
+		t.Skip("skipping test: ALIX_TEST_EMAIL_2 not set")
+	}
+
+	return email
+}
+
+func getTestEmails(t *testing.T) []string {
+	t.Helper()
+
+	email1 := strings.TrimSpace(os.Getenv("ALIX_TEST_EMAIL"))
+	if email1 == "" {
+		t.Skip("skipping test: ALIX_TEST_EMAIL not set")
+	}
+
+	emails := []string{email1}
+
+	email2 := strings.TrimSpace(os.Getenv("ALIX_TEST_EMAIL_2"))
+	if email2 != "" {
+		emails = append(emails, email2)
+	}
+
+	return emails
+}

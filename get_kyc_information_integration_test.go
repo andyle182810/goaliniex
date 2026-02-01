@@ -18,7 +18,7 @@ func TestIntegration_GetKycInformation_ValidUser(t *testing.T) {
 	defer cancel()
 
 	req := &goaliniex.KycInformationRequest{
-		UserEmail: "tvugiang@gmail.com",
+		UserEmail: getTestEmail(t),
 	}
 
 	resp, err := client.GetKycInformation(ctx, req)
@@ -207,10 +207,7 @@ func TestIntegration_GetKycInformation_MultipleRequests(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	t.Cleanup(cancel)
 
-	emails := []string{
-		"tvugiang@gmail.com",
-		"zavytran1409+3@gmail.com",
-	}
+	emails := getTestEmails(t)
 
 	for _, email := range emails {
 		t.Run(email, func(t *testing.T) {
@@ -242,7 +239,7 @@ func TestIntegration_GetKycInformation_LongTimeout(t *testing.T) {
 	defer cancel()
 
 	req := &goaliniex.KycInformationRequest{
-		UserEmail: "tvugiang@gmail.com",
+		UserEmail: getTestEmail(t),
 	}
 
 	start := time.Now()
@@ -266,7 +263,7 @@ func TestIntegration_GetKycInformation_ResponseDataFields(t *testing.T) {
 	defer cancel()
 
 	req := &goaliniex.KycInformationRequest{
-		UserEmail: "tvugiang@gmail.com",
+		UserEmail: getTestEmail(t),
 	}
 
 	resp, err := client.GetKycInformation(ctx, req)
@@ -313,10 +310,7 @@ func TestIntegration_GetKycInformation_ConcurrentRequests(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
-	emails := []string{
-		"tvugiang@gmail.com",
-		"zavytran1409+3@gmail.com",
-	}
+	emails := getTestEmails(t)
 
 	results := make(chan struct {
 		email   string
@@ -369,7 +363,7 @@ func TestIntegration_GetKycInformation_RepeatedRequests(t *testing.T) {
 	defer cancel()
 
 	req := &goaliniex.KycInformationRequest{
-		UserEmail: "tvugiang@gmail.com",
+		UserEmail: getTestEmail(t),
 	}
 
 	for requestNum := range 3 {

@@ -13,4 +13,5 @@ type request struct {
 	Header      http.Header
 	Body        io.Reader
 	FullURL     string
+	Public      bool
 }

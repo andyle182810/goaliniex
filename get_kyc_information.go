@@ -56,6 +56,7 @@ func (c *Client) GetKycInformation(ctx context.Context, req *KycInformationReque
 		Header:      nil,
 		Body:        nil,
 		FullURL:     "",
+		Public:      false,
 	}
 
 	rawResponse, err := c.execute(ctx, &apiRequest)

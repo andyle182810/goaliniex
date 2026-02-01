@@ -9,6 +9,7 @@ import (
 	"io"
 	"log/slog"
 	"net/http"
+	"net/url"
 
 	"github.com/andyle182810/goaliniex/signer"
 )
@@ -148,6 +149,30 @@ func paramsToMap(params any) (map[string]any, error) {
 	return result, nil
 }
 
+func (c *Client) buildGETRequest(req *request, fullURL string, headers http.Header) error {
+	paramsMap, err := paramsToMap(req.Params)
+	if err != nil {
+		return fmt.Errorf("%w: %w", ErrInvalidParams, err)
+	}
+
+	if len(paramsMap) > 0 {
+		queryParams := url.Values{}
+		for key, value := range paramsMap {
+			queryParams.Add(key, fmt.Sprintf("%v", value))
+		}
+
+		fullURL += "?" + queryParams.Encode()
+	}
+
+	c.logDebug("http request", "url", fullURL)
+
+	req.FullURL = fullURL
+	req.Header = headers
+	req.Body = nil
+
+	return nil
+}
+
 func (c *Client) buildRequest(req *request) error {
 	if req == nil {
 		return ErrNilRequest
@@ -163,18 +188,26 @@ func (c *Client) buildRequest(req *request) error {
 	headers.Set("Content-Type", "application/json")
 	headers.Set("User-Agent", UserAgent)
 
-	signature, err := signer.Sign(c.privateKey, req.SigningData)
-	if err != nil {
-		return fmt.Errorf("%w: %w", ErrRequestSign, err)
+	// For GET requests, use query parameters instead of body
+	if req.Method == http.MethodGet {
+		return c.buildGETRequest(req, fullURL, headers)
 	}
 
+	// For POST/other methods, use JSON body
 	bodyMap, err := paramsToMap(req.Params)
 	if err != nil {
 		return fmt.Errorf("%w: %w", ErrInvalidParams, err)
 	}
 
-	bodyMap["partnerCode"] = c.partnerCode
-	bodyMap["signature"] = signature
+	if !req.Public {
+		signature, err := signer.Sign(c.privateKey, req.SigningData)
+		if err != nil {
+			return fmt.Errorf("%w: %w", ErrRequestSign, err)
+		}
+
+		bodyMap["partnerCode"] = c.partnerCode
+		bodyMap["signature"] = signature
+	}
 
 	bodyBytes, err := json.Marshal(bodyMap)
 	if err != nil {

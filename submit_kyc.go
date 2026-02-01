@@ -67,6 +67,7 @@ func (c *Client) SubmitKyc(ctx context.Context, req *SubmitKycRequest) (*Respons
 		Header:      nil,
 		Body:        nil,
 		FullURL:     "",
+		Public:      false,
 	}
 
 	rawResponse, err := c.execute(ctx, &apiRequest)
