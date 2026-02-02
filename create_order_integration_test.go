@@ -68,7 +68,8 @@ func TestIntegration_CreateOrder_ValidUSDTVND(t *testing.T) {
 	t.Logf("  Type: %s", resp.Data.Type)
 	t.Logf("  Status: %s", resp.Data.Status)
 	t.Logf("  Fiat Amount: %.2f", resp.Data.FiatAmount)
-	t.Logf("  Token: %s, Price: %.2f, Amount: %.4f", resp.Data.TokenTransfer.Currency, resp.Data.TokenTransfer.Price, resp.Data.TokenTransfer.Amount)
+	t.Logf("  Token: %s, Price: %.2f, Amount: %.4f",
+		resp.Data.TokenTransfer.Currency, resp.Data.TokenTransfer.Price, resp.Data.TokenTransfer.Amount)
 	t.Logf("  Bank: %s (%s)", resp.Data.BankTransfer.BankName, resp.Data.BankTransfer.BankCode)
 	t.Logf("  Bank Account: %s (%s)", resp.Data.BankTransfer.BankAccountNumber, resp.Data.BankTransfer.BankAccountName)
 	t.Logf("  Fees: System=%.2f, Processing=%.2f", resp.Data.Fees.SystemFee, resp.Data.Fees.ProcessingFee)
@@ -575,8 +576,10 @@ func TestIntegration_CreateOrder_ResponseDataFields(t *testing.T) {
 	t.Logf("  Type: %q", data.Type)
 	t.Logf("  Status: %q", data.Status)
 	t.Logf("  FiatAmount: %.2f", data.FiatAmount)
-	t.Logf("  TokenTransfer: Currency=%q, Price=%.2f, Amount=%.4f", data.TokenTransfer.Currency, data.TokenTransfer.Price, data.TokenTransfer.Amount)
-	t.Logf("  BankTransfer: BankCode=%q, BankName=%q, AccountNumber=%q", data.BankTransfer.BankCode, data.BankTransfer.BankName, data.BankTransfer.BankAccountNumber)
+	t.Logf("  TokenTransfer: Currency=%q, Price=%.2f, Amount=%.4f",
+		data.TokenTransfer.Currency, data.TokenTransfer.Price, data.TokenTransfer.Amount)
+	t.Logf("  BankTransfer: BankCode=%q, BankName=%q, AccountNumber=%q",
+		data.BankTransfer.BankCode, data.BankTransfer.BankName, data.BankTransfer.BankAccountNumber)
 	t.Logf("  Fees: SystemFee=%.2f, ProcessingFee=%.2f", data.Fees.SystemFee, data.Fees.ProcessingFee)
 	t.Logf("  CreatedAt: %q", data.CreatedAt)
 	t.Logf("  ExpiresAt: %q", data.ExpiresAt)
