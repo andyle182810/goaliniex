@@ -73,7 +73,7 @@ UpCbzjvpmE2CMpZTOBnfwSE=
 
 func newTestClientWithMock(httpClient goaliniex.HTTPClient) (*goaliniex.Client, error) {
 	return goaliniex.NewClient(
-		"https://sandbox.alixpay.com",
+		"https://api.alixpay.com",
 		"TEST_PARTNER",
 		"TEST_SECRET",
 		testPrivateKey(),
@@ -158,4 +158,26 @@ func getTestEmails(t *testing.T) []string {
 	}
 
 	return emails
+}
+
+func getTestBankCode(t *testing.T) string {
+	t.Helper()
+
+	bankCode := strings.TrimSpace(os.Getenv("ALIX_TEST_BANK_CODE"))
+	if bankCode == "" {
+		t.Skip("skipping test: ALIX_TEST_BANK_CODE not set")
+	}
+
+	return bankCode
+}
+
+func getTestBankAccountNumber(t *testing.T) string {
+	t.Helper()
+
+	bankAccountNumber := strings.TrimSpace(os.Getenv("ALIX_TEST_BANK_ACCOUNT_NUMBER"))
+	if bankAccountNumber == "" {
+		t.Skip("skipping test: ALIX_TEST_BANK_ACCOUNT_NUMBER not set")
+	}
+
+	return bankAccountNumber
 }

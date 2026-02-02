@@ -34,8 +34,8 @@ func TestIntegration_CreateOrder_ValidUSDTVND(t *testing.T) {
 		Currency:          goaliniex.CurrencyUSDT,
 		FiatAmount:        100000,
 		FiatCurrency:      goaliniex.FiatCurrencyVND,
-		BankCode:          "970407",
-		BankAccountNumber: "888812345678",
+		BankCode:          getTestBankCode(t),
+		BankAccountNumber: getTestBankAccountNumber(t),
 		ExternalOrderID:   "test-order-" + time.Now().Format("20060102150405"),
 		WebhookSecretKey:  webhookSecret,
 		UserEmail:         getTestEmail(t),
@@ -64,15 +64,15 @@ func TestIntegration_CreateOrder_ValidUSDTVND(t *testing.T) {
 	}
 
 	t.Logf("Order created successfully")
-	t.Logf("  Order ID: %s", resp.Data.OrderID)
 	t.Logf("  External Order ID: %s", resp.Data.ExternalOrderID)
+	t.Logf("  Type: %s", resp.Data.Type)
 	t.Logf("  Status: %s", resp.Data.Status)
-	t.Logf("  Currency: %s", resp.Data.Currency)
 	t.Logf("  Fiat Amount: %.2f", resp.Data.FiatAmount)
-	t.Logf("  Fiat Currency: %s", resp.Data.FiatCurrency)
-	t.Logf("  Bank Code: %s", resp.Data.BankCode)
-	t.Logf("  Bank Account Number: %s", resp.Data.BankAccountNumber)
-	t.Logf("  Created At: %s", resp.Data.CreatedAt)
+	t.Logf("  Token: %s, Price: %.2f, Amount: %.4f", resp.Data.TokenTransfer.Currency, resp.Data.TokenTransfer.Price, resp.Data.TokenTransfer.Amount)
+	t.Logf("  Bank: %s (%s)", resp.Data.BankTransfer.BankName, resp.Data.BankTransfer.BankCode)
+	t.Logf("  Bank Account: %s (%s)", resp.Data.BankTransfer.BankAccountNumber, resp.Data.BankTransfer.BankAccountName)
+	t.Logf("  Fees: System=%.2f, Processing=%.2f", resp.Data.Fees.SystemFee, resp.Data.Fees.ProcessingFee)
+	t.Logf("  Created At: %s, Expires At: %s", resp.Data.CreatedAt, resp.Data.ExpiresAt)
 }
 
 func TestIntegration_CreateOrder_WithKYCVerified(t *testing.T) {
@@ -110,7 +110,7 @@ func TestIntegration_CreateOrder_WithKYCVerified(t *testing.T) {
 	}
 
 	t.Logf("Order created with KYC verified user")
-	t.Logf("  Order ID: %s", resp.Data.OrderID)
+	t.Logf("  External Order ID: %s", resp.Data.ExternalOrderID)
 	t.Logf("  Status: %s", resp.Data.Status)
 }
 
@@ -178,7 +178,7 @@ func TestIntegration_CreateOrder_DifferentFiatCurrencies(t *testing.T) {
 				testCase.name, resp.Success, resp.ErrorCode, resp.Message)
 
 			if resp.Success && resp.Data != nil {
-				t.Logf("  Order ID: %s, Status: %s", resp.Data.OrderID, resp.Data.Status)
+				t.Logf("  Order ID: %s, Status: %s", resp.Data.ExternalOrderID, resp.Data.Status)
 			}
 		})
 	}
@@ -228,7 +228,7 @@ func TestIntegration_CreateOrder_DifferentCryptoCurrencies(t *testing.T) {
 				currency, resp.Success, resp.ErrorCode, resp.Message)
 
 			if resp.Success && resp.Data != nil {
-				t.Logf("  Order ID: %s, Status: %s", resp.Data.OrderID, resp.Data.Status)
+				t.Logf("  Order ID: %s, Status: %s", resp.Data.ExternalOrderID, resp.Data.Status)
 			}
 		})
 	}
@@ -571,19 +571,15 @@ func TestIntegration_CreateOrder_ResponseDataFields(t *testing.T) {
 	data := resp.Data
 
 	t.Logf("Response Data Fields:")
-	t.Logf("  OrderID: %q", data.OrderID)
 	t.Logf("  ExternalOrderID: %q", data.ExternalOrderID)
+	t.Logf("  Type: %q", data.Type)
 	t.Logf("  Status: %q", data.Status)
-	t.Logf("  Currency: %q", data.Currency)
 	t.Logf("  FiatAmount: %.2f", data.FiatAmount)
-	t.Logf("  FiatCurrency: %q", data.FiatCurrency)
-	t.Logf("  BankCode: %q", data.BankCode)
-	t.Logf("  BankAccountNumber: %q", data.BankAccountNumber)
+	t.Logf("  TokenTransfer: Currency=%q, Price=%.2f, Amount=%.4f", data.TokenTransfer.Currency, data.TokenTransfer.Price, data.TokenTransfer.Amount)
+	t.Logf("  BankTransfer: BankCode=%q, BankName=%q, AccountNumber=%q", data.BankTransfer.BankCode, data.BankTransfer.BankName, data.BankTransfer.BankAccountNumber)
+	t.Logf("  Fees: SystemFee=%.2f, ProcessingFee=%.2f", data.Fees.SystemFee, data.Fees.ProcessingFee)
 	t.Logf("  CreatedAt: %q", data.CreatedAt)
-
-	if data.OrderID == "" {
-		t.Error("OrderID should not be empty")
-	}
+	t.Logf("  ExpiresAt: %q", data.ExpiresAt)
 
 	if data.ExternalOrderID != req.ExternalOrderID {
 		t.Errorf("ExternalOrderID mismatch: got %q, want %q", data.ExternalOrderID, req.ExternalOrderID)
@@ -593,12 +589,12 @@ func TestIntegration_CreateOrder_ResponseDataFields(t *testing.T) {
 		t.Error("Status should not be empty")
 	}
 
-	if data.Currency != req.Currency {
-		t.Errorf("Currency mismatch: got %q, want %q", data.Currency, req.Currency)
+	if data.TokenTransfer.Currency != req.Currency {
+		t.Errorf("Currency mismatch: got %q, want %q", data.TokenTransfer.Currency, req.Currency)
 	}
 
-	if data.FiatCurrency != req.FiatCurrency {
-		t.Errorf("FiatCurrency mismatch: got %q, want %q", data.FiatCurrency, req.FiatCurrency)
+	if data.BankTransfer.BankCode == "" {
+		t.Error("BankCode should not be empty")
 	}
 }
 
@@ -638,6 +634,6 @@ func TestIntegration_CreateOrder_LongTimeout(t *testing.T) {
 		resp.Success, resp.ErrorCode, resp.Message)
 
 	if resp.Success && resp.Data != nil {
-		t.Logf("  Order ID: %s, Status: %s", resp.Data.OrderID, resp.Data.Status)
+		t.Logf("  Order ID: %s, Status: %s", resp.Data.ExternalOrderID, resp.Data.Status)
 	}
 }
