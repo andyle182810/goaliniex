@@ -73,7 +73,7 @@ UpCbzjvpmE2CMpZTOBnfwSE=
 
 func newTestClientWithMock(httpClient goaliniex.HTTPClient) (*goaliniex.Client, error) {
 	return goaliniex.NewClient(
-		"https://api.alixpay.com",
+		"https://sandbox.alixpay.com",
 		"TEST_PARTNER",
 		"TEST_SECRET",
 		testPrivateKey(),
