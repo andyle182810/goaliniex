@@ -21,12 +21,14 @@ type TokenTransfer struct {
 }
 
 type BankTransfer struct {
-	BankCode          string `json:"bankCode"`
-	BankName          string `json:"bankName"`
-	BankAccountNumber string `json:"bankAccountNumber"`
-	BankAccountName   string `json:"bankAccountName"`
-	Content           string `json:"content"`
-	QRCodeURL         string `json:"qrCodeUrl"`
+	BankCode          string  `json:"bankCode"`
+	BankName          string  `json:"bankName"`
+	BankAccountNumber string  `json:"bankAccountNumber"`
+	BankAccountName   string  `json:"bankAccountName"`
+	Content           string  `json:"content"`
+	ContentPayment    string  `json:"contentPayment"`
+	TotalPayment      float64 `json:"totalPayment"`
+	QRCodeURL         string  `json:"qrCodeUrl"`
 }
 
 type Fees struct {
@@ -38,13 +40,12 @@ type OrderDetails struct {
 	ExternalOrderID string        `json:"externalOrderId"`
 	Type            string        `json:"type"`
 	FiatAmount      float64       `json:"fiatAmount"`
-	FiatCurrency    FiatCurrency  `json:"fiatCurrency"`
 	PaidAmount      float64       `json:"paidAmount"`
 	TokenTransfer   TokenTransfer `json:"tokenTransfer"`
 	BankTransfer    BankTransfer  `json:"bankTransfer"`
 	Fees            Fees          `json:"fees"`
 	Status          OrderStatus   `json:"status"`
-	Description     string        `json:"description"`
+	Descriptions    string        `json:"descriptions"`
 	CreatedAt       string        `json:"createdAt"`
 	ExpiresAt       string        `json:"expiresAt"`
 	Signature       string        `json:"signature"`

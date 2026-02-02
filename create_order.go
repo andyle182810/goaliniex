@@ -55,15 +55,18 @@ type CreateOrderRequest struct {
 }
 
 type CreateOrderResponse struct {
-	OrderID           string       `json:"orderId"`
-	ExternalOrderID   string       `json:"externalOrderId"`
-	Status            OrderStatus  `json:"status"`
-	Currency          Currency     `json:"currency"`
-	FiatAmount        float64      `json:"fiatAmount"`
-	FiatCurrency      FiatCurrency `json:"fiatCurrency"`
-	BankCode          string       `json:"bankCode"`
-	BankAccountNumber string       `json:"bankAccountNumber"`
-	CreatedAt         string       `json:"createdAt"`
+	ExternalOrderID string        `json:"externalOrderId"`
+	Type            string        `json:"type"`
+	FiatAmount      float64       `json:"fiatAmount"`
+	PaidAmount      float64       `json:"paidAmount"`
+	TokenTransfer   TokenTransfer `json:"tokenTransfer"`
+	BankTransfer    BankTransfer  `json:"bankTransfer"`
+	Fees            Fees          `json:"fees"`
+	Status          OrderStatus   `json:"status"`
+	Descriptions    string        `json:"descriptions"`
+	CreatedAt       string        `json:"createdAt"`
+	ExpiresAt       string        `json:"expiresAt"`
+	Signature       string        `json:"signature"`
 }
 
 func (c *Client) CreateOrder(ctx context.Context, req *CreateOrderRequest) (*Response[CreateOrderResponse], error) {

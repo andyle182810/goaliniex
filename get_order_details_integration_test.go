@@ -17,7 +17,7 @@ func TestIntegration_GetOrderDetails_ValidOrder(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
 	defer cancel()
 
-	externalOrderID := "order_a0150bb0-2399-40f8-b4c3-bf3765864c73"
+	externalOrderID := "test-order-20260202125936"
 	detailsReq := &goaliniex.GetOrderDetailsRequest{
 		ExternalOrderID: externalOrderID,
 	}
@@ -46,7 +46,6 @@ func TestIntegration_GetOrderDetails_ValidOrder(t *testing.T) {
 	t.Logf("  Type: %s", resp.Data.Type)
 	t.Logf("  Status: %s", resp.Data.Status)
 	t.Logf("  Fiat Amount: %.2f", resp.Data.FiatAmount)
-	t.Logf("  Fiat Currency: %s", resp.Data.FiatCurrency)
 	t.Logf("  Paid Amount: %.2f", resp.Data.PaidAmount)
 	t.Logf("  Created At: %s", resp.Data.CreatedAt)
 	t.Logf("  Expires At: %s", resp.Data.ExpiresAt)
@@ -155,7 +154,7 @@ func TestIntegration_GetOrderDetails_ResponseDataFields(t *testing.T) {
 	data := resp.Data
 
 	t.Logf("Order: ExternalOrderID=%q Type=%q Status=%q", data.ExternalOrderID, data.Type, data.Status)
-	t.Logf("Amounts: Fiat=%.2f %s Paid=%.2f", data.FiatAmount, data.FiatCurrency, data.PaidAmount)
+	t.Logf("Amounts: Fiat=%.2f Paid=%.2f", data.FiatAmount, data.PaidAmount)
 	t.Logf("Dates: Created=%q Expires=%q", data.CreatedAt, data.ExpiresAt)
 
 	if data.ExternalOrderID != externalOrderID {
