@@ -18,14 +18,14 @@ func TestIntegration_SubmitKyc_ValidRequest(t *testing.T) {
 	defer cancel()
 
 	req := &goaliniex.SubmitKycRequest{
-		UserEmail:        getTestEmail(t),
+		UserEmail:        generateRandomGmail(t),
 		FirstName:        "John",
 		LastName:         "Doe",
 		DateOfBirth:      "1990-01-01",
 		Gender:           goaliniex.GenderMale,
 		Nationality:      "US",
 		DocumentType:     goaliniex.IDTypePassport,
-		NationalID:       "123456789",
+		NationalID:       generateTestSSN(t),
 		IssueDate:        "2020-01-01",
 		ExpiryDate:       "2030-01-01",
 		AddressLine1:     "123 Main St",
@@ -33,9 +33,9 @@ func TestIntegration_SubmitKyc_ValidRequest(t *testing.T) {
 		City:             "New York",
 		State:            "NY",
 		ZipCode:          "10001",
-		FrontIDImage:     "base64frontimage",
-		BackIDImage:      "base64backimage",
-		HoldIDImage:      "base64holdimage",
+		FrontIDImage:     getTestImageDataURI(),
+		BackIDImage:      getTestImageDataURI(),
+		HoldIDImage:      getTestImageDataURI(),
 		PhoneNumber:      "1234567890",
 		PhoneCountryCode: "1",
 	}
@@ -52,7 +52,7 @@ func TestIntegration_SubmitKyc_ValidRequest(t *testing.T) {
 	t.Logf("SubmitKyc response: success=%v, message=%s", resp.Success, resp.Message)
 
 	if resp.Success && resp.Data != nil {
-		t.Logf("  NationalID: %s", resp.Data.NationalID)
+		t.Logf("  ID: %d", resp.Data.ID)
 		t.Logf("  KycStatus: %s", resp.Data.KycStatus)
 		t.Logf("  Signature length: %d", len(resp.Data.Signature))
 	}

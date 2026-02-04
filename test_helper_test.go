@@ -2,12 +2,16 @@ package goaliniex_test
 
 import (
 	"bytes"
+	"crypto/rand"
+	"encoding/hex"
+	"fmt"
 	"io"
 	"log/slog"
 	"net/http"
 	"os"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/andyle182810/goaliniex"
 )
@@ -129,6 +133,43 @@ func getTestEmail(t *testing.T) string {
 	}
 
 	return email
+}
+
+func generateRandomGmail(t *testing.T) string {
+	t.Helper()
+
+	randomBytes := make([]byte, 6)
+	if _, err := rand.Read(randomBytes); err != nil {
+		t.Fatalf("failed to generate random bytes: %v", err)
+	}
+
+	timestamp := time.Now().UnixNano()
+
+	return fmt.Sprintf("test.%s.%d@gmail.com", hex.EncodeToString(randomBytes), timestamp)
+}
+
+const testImageBase64 = "/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAgGBgcGBQgHBwcJCQgKDBQNDAsLDBkSEw8UHRof" +
+	"Hh0aHBwgJC4nICIsIxwcKDcpLDAxNDQ0Hyc5PTgyPC4zNDL/2wBDAQkJCQwLDBgNDRgyIRwhMjIyMjIyMjIyMjIy" +
+	"MjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjL/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAn" +
+	"/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEB/wCwAB//2Q=="
+
+func getTestImageDataURI() string {
+	return "data:image/jpeg;base64," + testImageBase64
+}
+
+func generateTestSSN(t *testing.T) string {
+	t.Helper()
+
+	randomBytes := make([]byte, 4)
+	if _, err := rand.Read(randomBytes); err != nil {
+		t.Fatalf("failed to generate random bytes: %v", err)
+	}
+
+	area := 900 + int(randomBytes[0])%100
+	group := 1 + int(randomBytes[1])%99
+	serial := 1 + int(randomBytes[2])%9999
+
+	return fmt.Sprintf("%03d-%02d-%04d", area, group, serial)
 }
 
 func getTestEmail2(t *testing.T) string {

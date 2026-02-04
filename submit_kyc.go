@@ -45,9 +45,9 @@ type SubmitKycRequest struct {
 }
 
 type SubmitKycResponse struct {
-	NationalID string `json:"nationalId"`
-	KycStatus  string `json:"kycStatus"`
-	Signature  string `json:"signature"`
+	ID        int    `json:"id"`
+	KycStatus string `json:"kycStatus"`
+	Signature string `json:"signature"`
 }
 
 func (c *Client) SubmitKyc(ctx context.Context, req *SubmitKycRequest) (*Response[SubmitKycResponse], error) {

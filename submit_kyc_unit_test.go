@@ -17,7 +17,7 @@ func TestSubmitKyc_Success(t *testing.T) {
 		"success": true,
 		"message": "Success",
 		"data": {
-			"nationalId": "123456789",
+			"id": 123456789,
 			"kycStatus": "pending",
 			"signature": "abc123signature"
 		},
@@ -62,8 +62,8 @@ func TestSubmitKyc_Success(t *testing.T) {
 		t.Errorf("expected success=true, got false")
 	}
 
-	if resp.Data.NationalID != "123456789" {
-		t.Errorf("expected nationalId=123456789, got %s", resp.Data.NationalID)
+	if resp.Data.ID != 123456789 {
+		t.Errorf("expected id=123456789, got %d", resp.Data.ID)
 	}
 
 	if resp.Data.KycStatus != "pending" {
@@ -82,7 +82,7 @@ func TestSubmitKyc_WithIDCard(t *testing.T) {
 		"success": true,
 		"message": "Success",
 		"data": {
-			"nationalId": "987654321",
+			"id": 987654321,
 			"kycStatus": "pending",
 			"signature": "xyz789signature"
 		},
@@ -127,8 +127,8 @@ func TestSubmitKyc_WithIDCard(t *testing.T) {
 		t.Errorf("expected success=true, got false")
 	}
 
-	if resp.Data.NationalID != "987654321" {
-		t.Errorf("expected nationalId=987654321, got %s", resp.Data.NationalID)
+	if resp.Data.ID != 987654321 {
+		t.Errorf("expected id=987654321, got %d", resp.Data.ID)
 	}
 }
 
@@ -468,7 +468,7 @@ func TestSubmitKyc_GenderValues(t *testing.T) {
 				"success": true,
 				"message": "Success",
 				"data": {
-					"nationalId": "123456789",
+					"id": 123456789,
 					"kycStatus": "pending",
 					"signature": "testsig"
 				},
@@ -537,7 +537,7 @@ func TestSubmitKyc_DocumentTypes(t *testing.T) {
 				"success": true,
 				"message": "Success",
 				"data": {
-					"nationalId": "123456789",
+					"id": 123456789,
 					"kycStatus": "pending",
 					"signature": "testsig"
 				},
