@@ -36,6 +36,7 @@ func TestIntegration_SubmitKyc_ValidRequest(t *testing.T) {
 		FrontIDImage:     getTestImageDataURI(),
 		BackIDImage:      getTestImageDataURI(),
 		HoldIDImage:      getTestImageDataURI(),
+		KycReport:        getTestPdfDataURI(),
 		PhoneNumber:      "1234567890",
 		PhoneCountryCode: "1",
 	}
@@ -85,6 +86,7 @@ func TestIntegration_SubmitKyc_WithIDCard(t *testing.T) {
 		FrontIDImage:     "base64front",
 		BackIDImage:      "base64back",
 		HoldIDImage:      "base64hold",
+		KycReport:        "data:application/pdf;base64,report",
 		PhoneNumber:      "0987654321",
 		PhoneCountryCode: "84",
 	}
@@ -95,6 +97,46 @@ func TestIntegration_SubmitKyc_WithIDCard(t *testing.T) {
 	}
 
 	t.Logf("SubmitKyc response: success=%v, message=%s", resp.Success, resp.Message)
+}
+
+func TestIntegration_SubmitKyc_PassportWithoutBackImage(t *testing.T) {
+	t.Parallel()
+
+	client := newTestClient(t)
+
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+
+	req := &goaliniex.SubmitKycRequest{
+		UserEmail:        "test_passport_no_back@example.com",
+		FirstName:        "Test",
+		LastName:         "Passport",
+		DateOfBirth:      "1990-01-01",
+		Gender:           goaliniex.GenderMale,
+		Nationality:      "US",
+		DocumentType:     goaliniex.IDTypePassport,
+		NationalID:       "555666777",
+		IssueDate:        "2020-01-01",
+		ExpiryDate:       "2030-01-01",
+		AddressLine1:     "123 Test St",
+		AddressLine2:     "123 Test St",
+		City:             "Test City",
+		State:            "TS",
+		ZipCode:          "12345",
+		FrontIDImage:     "base64front",
+		BackIDImage:      "",
+		HoldIDImage:      "base64hold",
+		KycReport:        "data:application/pdf;base64,report",
+		PhoneNumber:      "1234567890",
+		PhoneCountryCode: "1",
+	}
+
+	resp, err := client.SubmitKyc(ctx, req)
+	if err != nil {
+		t.Fatalf("SubmitKyc returned error: %v", err)
+	}
+
+	t.Logf("SubmitKyc response for passport without backIdImage: success=%v, message=%s", resp.Success, resp.Message)
 }
 
 func TestIntegration_SubmitKyc_EmptyEmail(t *testing.T) {
@@ -124,6 +166,7 @@ func TestIntegration_SubmitKyc_EmptyEmail(t *testing.T) {
 		FrontIDImage:     "base64front",
 		BackIDImage:      "base64back",
 		HoldIDImage:      "base64hold",
+		KycReport:        "data:application/pdf;base64,report",
 		PhoneNumber:      "1234567890",
 		PhoneCountryCode: "1",
 	}
@@ -169,6 +212,7 @@ func TestIntegration_SubmitKyc_InvalidEmailFormat(t *testing.T) {
 		FrontIDImage:     "base64front",
 		BackIDImage:      "base64back",
 		HoldIDImage:      "base64hold",
+		KycReport:        "data:application/pdf;base64,report",
 		PhoneNumber:      "1234567890",
 		PhoneCountryCode: "1",
 	}
@@ -238,6 +282,7 @@ func TestIntegration_SubmitKyc_ContextTimeout(t *testing.T) {
 		FrontIDImage:     "base64front",
 		BackIDImage:      "base64back",
 		HoldIDImage:      "base64hold",
+		KycReport:        "data:application/pdf;base64,report",
 		PhoneNumber:      "1234567890",
 		PhoneCountryCode: "1",
 	}
@@ -282,6 +327,7 @@ func TestIntegration_SubmitKyc_ContextCancellation(t *testing.T) {
 		FrontIDImage:     "base64front",
 		BackIDImage:      "base64back",
 		HoldIDImage:      "base64hold",
+		KycReport:        "data:application/pdf;base64,report",
 		PhoneNumber:      "1234567890",
 		PhoneCountryCode: "1",
 	}
@@ -334,6 +380,7 @@ func TestIntegration_SubmitKyc_DifferentNationalities(t *testing.T) {
 				FrontIDImage:     "base64front",
 				BackIDImage:      "base64back",
 				HoldIDImage:      "base64hold",
+				KycReport:        "data:application/pdf;base64,report",
 				PhoneNumber:      "1234567890",
 				PhoneCountryCode: "1",
 			}
@@ -390,6 +437,7 @@ func TestIntegration_SubmitKyc_DocumentTypes(t *testing.T) { //nolint:dupl
 				FrontIDImage:     "base64front",
 				BackIDImage:      "base64back",
 				HoldIDImage:      "base64hold",
+				KycReport:        "data:application/pdf;base64,report",
 				PhoneNumber:      "1234567890",
 				PhoneCountryCode: "1",
 			}
@@ -446,6 +494,7 @@ func TestIntegration_SubmitKyc_GenderValues(t *testing.T) { //nolint:dupl
 				FrontIDImage:     "base64front",
 				BackIDImage:      "base64back",
 				HoldIDImage:      "base64hold",
+				KycReport:        "data:application/pdf;base64,report",
 				PhoneNumber:      "1234567890",
 				PhoneCountryCode: "1",
 			}
@@ -490,6 +539,7 @@ func TestIntegration_SubmitKyc_LongTimeout(t *testing.T) {
 		FrontIDImage:     "base64front",
 		BackIDImage:      "base64back",
 		HoldIDImage:      "base64hold",
+		KycReport:        "data:application/pdf;base64,report",
 		PhoneNumber:      "1234567890",
 		PhoneCountryCode: "1",
 	}
@@ -533,6 +583,7 @@ func TestIntegration_SubmitKyc_SpecialCharactersInAddress(t *testing.T) {
 		FrontIDImage:     "base64front",
 		BackIDImage:      "base64back",
 		HoldIDImage:      "base64hold",
+		KycReport:        "data:application/pdf;base64,report",
 		PhoneNumber:      "1234567890",
 		PhoneCountryCode: "1",
 	}

@@ -51,6 +51,7 @@ func TestSubmitKyc_Success(t *testing.T) {
 		FrontIDImage:     "base64frontimage",
 		BackIDImage:      "base64backimage",
 		HoldIDImage:      "base64holdimage",
+		KycReport:        "data:application/pdf;base64,report",
 		PhoneNumber:      "1234567890",
 		PhoneCountryCode: "1",
 	})
@@ -116,6 +117,7 @@ func TestSubmitKyc_WithIDCard(t *testing.T) {
 		FrontIDImage:     "base64front",
 		BackIDImage:      "base64back",
 		HoldIDImage:      "base64hold",
+		KycReport:        "data:application/pdf;base64,report",
 		PhoneNumber:      "1234567890",
 		PhoneCountryCode: "1",
 	})
@@ -169,6 +171,7 @@ func TestSubmitKyc_APIError(t *testing.T) {
 		FrontIDImage:     "base64front",
 		BackIDImage:      "base64back",
 		HoldIDImage:      "base64hold",
+		KycReport:        "data:application/pdf;base64,report",
 		PhoneNumber:      "1234567890",
 		PhoneCountryCode: "1",
 	})
@@ -216,6 +219,7 @@ func TestSubmitKyc_HTTPError(t *testing.T) {
 		FrontIDImage:     "base64front",
 		BackIDImage:      "base64back",
 		HoldIDImage:      "base64hold",
+		KycReport:        "data:application/pdf;base64,report",
 		PhoneNumber:      "1234567890",
 		PhoneCountryCode: "1",
 	})
@@ -258,6 +262,7 @@ func TestSubmitKyc_NetworkError(t *testing.T) {
 		FrontIDImage:     "base64front",
 		BackIDImage:      "base64back",
 		HoldIDImage:      "base64hold",
+		KycReport:        "data:application/pdf;base64,report",
 		PhoneNumber:      "1234567890",
 		PhoneCountryCode: "1",
 	})
@@ -303,6 +308,7 @@ func TestSubmitKyc_ContextCancellation(t *testing.T) {
 		FrontIDImage:     "base64front",
 		BackIDImage:      "base64back",
 		HoldIDImage:      "base64hold",
+		KycReport:        "data:application/pdf;base64,report",
 		PhoneNumber:      "1234567890",
 		PhoneCountryCode: "1",
 	})
@@ -344,6 +350,7 @@ func TestSubmitKyc_ContextTimeout(t *testing.T) {
 		FrontIDImage:     "base64front",
 		BackIDImage:      "base64back",
 		HoldIDImage:      "base64hold",
+		KycReport:        "data:application/pdf;base64,report",
 		PhoneNumber:      "1234567890",
 		PhoneCountryCode: "1",
 	})
@@ -382,6 +389,7 @@ func TestSubmitKyc_InvalidJSON(t *testing.T) {
 		FrontIDImage:     "base64front",
 		BackIDImage:      "base64back",
 		HoldIDImage:      "base64hold",
+		KycReport:        "data:application/pdf;base64,report",
 		PhoneNumber:      "1234567890",
 		PhoneCountryCode: "1",
 	})
@@ -435,6 +443,7 @@ func TestSubmitKyc_HTTPStatusCodes(t *testing.T) {
 				FrontIDImage:     "base64front",
 				BackIDImage:      "base64back",
 				HoldIDImage:      "base64hold",
+				KycReport:        "data:application/pdf;base64,report",
 				PhoneNumber:      "1234567890",
 				PhoneCountryCode: "1",
 			})
@@ -503,6 +512,7 @@ func TestSubmitKyc_GenderValues(t *testing.T) {
 				FrontIDImage:     "base64front",
 				BackIDImage:      "base64back",
 				HoldIDImage:      "base64hold",
+				KycReport:        "data:application/pdf;base64,report",
 				PhoneNumber:      "1234567890",
 				PhoneCountryCode: "1",
 			})
@@ -572,6 +582,7 @@ func TestSubmitKyc_DocumentTypes(t *testing.T) {
 				FrontIDImage:     "base64front",
 				BackIDImage:      "base64back",
 				HoldIDImage:      "base64hold",
+				KycReport:        "data:application/pdf;base64,report",
 				PhoneNumber:      "1234567890",
 				PhoneCountryCode: "1",
 			})

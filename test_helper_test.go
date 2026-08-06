@@ -157,6 +157,14 @@ func getTestImageDataURI() string {
 	return "data:image/jpeg;base64," + testImageBase64
 }
 
+const testPdfBase64 = "JVBERi0xLjQKMSAwIG9iajw8L1R5cGUvQ2F0YWxvZy9QYWdlcyAyIDAgUj4+ZW5kb2JqCjIgMCBvYmo8PC9UeXBlL1BhZ2VzL0" +
+	"tpZHNbMyAwIFJdL0NvdW50IDE+PmVuZG9iagozIDAgb2JqPDwvVHlwZS9QYWdlL1BhcmVudCAyIDAgUi9NZWRpYUJveFswIDAgMyAzXT4+ZW5k" +
+	"b2JqCnRyYWlsZXI8PC9TaXplIDQvUm9vdCAxIDAgUj4+CiUlRU9GCg=="
+
+func getTestPdfDataURI() string {
+	return "data:application/pdf;base64," + testPdfBase64
+}
+
 func generateTestSSN(t *testing.T) string {
 	t.Helper()
 
