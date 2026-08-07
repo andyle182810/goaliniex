@@ -38,8 +38,9 @@ type SubmitKycRequest struct {
 	State            string `json:"state"`
 	ZipCode          string `json:"zipCode"`
 	FrontIDImage     string `json:"frontIdImage"`
-	BackIDImage      string `json:"backIdImage"`
+	BackIDImage      string `json:"backIdImage,omitempty"`
 	HoldIDImage      string `json:"holdIdImage"`
+	KycReport        string `json:"kycReport"`
 	PhoneNumber      string `json:"phoneNumber,omitempty"`
 	PhoneCountryCode string `json:"phoneCountryCode,omitempty"`
 }
