@@ -17,27 +17,30 @@ const (
 type IDType string
 
 const (
-	IDTypeIDCard   IDType = "ID_CARD"
-	IDTypePassport IDType = "PASSPORT"
+	IDTypeIDCard          IDType = "ID_CARD"
+	IDTypePassport        IDType = "PASSPORT"
+	IDTypeDriversLicense  IDType = "DRIVERS_LICENSE"
+	IDTypeResidencePermit IDType = "RESIDENCE_PERMIT"
 )
 
 type SubmitKycRequest struct {
-	UserEmail        string `json:"userEmail"`
-	FirstName        string `json:"firstName"`
-	LastName         string `json:"lastName"`
-	DateOfBirth      string `json:"dateOfBirth"`
-	Gender           Gender `json:"gender"`
-	Nationality      string `json:"nationality"`
-	DocumentType     IDType `json:"type"`
-	NationalID       string `json:"nationalId"`
-	IssueDate        string `json:"issueDate"`
-	ExpiryDate       string `json:"expiryDate"`
-	AddressLine1     string `json:"addressLine1"`
-	AddressLine2     string `json:"addressLine2"`
-	City             string `json:"city"`
-	State            string `json:"state"`
-	ZipCode          string `json:"zipCode"`
-	FrontIDImage     string `json:"frontIdImage"`
+	UserEmail    string `json:"userEmail"`
+	FirstName    string `json:"firstName"`
+	LastName     string `json:"lastName"`
+	DateOfBirth  string `json:"dateOfBirth"`
+	Gender       Gender `json:"gender,omitempty"`
+	Nationality  string `json:"nationality"`
+	DocumentType IDType `json:"type"`
+	NationalID   string `json:"nationalId"`
+	IssueDate    string `json:"issueDate,omitempty"`
+	ExpiryDate   string `json:"expiryDate"`
+	AddressLine1 string `json:"addressLine1,omitempty"`
+	AddressLine2 string `json:"addressLine2,omitempty"`
+	City         string `json:"city,omitempty"`
+	State        string `json:"state,omitempty"`
+	ZipCode      string `json:"zipCode,omitempty"`
+	FrontIDImage string `json:"frontIdImage"`
+	// BackIDImage is required unless DocumentType is IDTypePassport.
 	BackIDImage      string `json:"backIdImage,omitempty"`
 	HoldIDImage      string `json:"holdIdImage"`
 	KycReport        string `json:"kycReport"`
