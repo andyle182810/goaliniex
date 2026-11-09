@@ -6,12 +6,12 @@ import (
 )
 
 type request struct {
-	Method      string
-	Endpoint    string
-	Params      any
-	SigningData []byte
-	Header      http.Header
-	Body        io.Reader
-	FullURL     string
-	Public      bool
+	Method    string
+	Endpoint  string
+	Params    any
+	UserEmail string
+	Header    http.Header
+	Body      io.Reader
+	FullURL   string
+	Public    bool
 }

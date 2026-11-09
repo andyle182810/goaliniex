@@ -3,15 +3,15 @@ package goaliniex
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"net/http"
 )
 
+// Gender is MALE/FEMALE per Alix v3 (not v2's lowercase male/female).
 type Gender string
 
 const (
-	GenderMale   Gender = "male"
-	GenderFemale Gender = "female"
+	GenderMale   Gender = "MALE"
+	GenderFemale Gender = "FEMALE"
 )
 
 type IDType string
@@ -23,55 +23,59 @@ const (
 	IDTypeResidencePermit IDType = "RESIDENCE_PERMIT"
 )
 
+// SubmitKycAddress is the optional residential address group for a KYC
+// submission/supplement. Line1, City, State and ZipCode are required
+// together; Line2 is optional.
+type SubmitKycAddress struct {
+	Line1   string `json:"line1"`
+	Line2   string `json:"line2,omitempty"`
+	City    string `json:"city"`
+	State   string `json:"state"`
+	ZipCode string `json:"zipCode"`
+}
+
+// SubmitKycPhone is the optional contact phone group for a KYC
+// submission/supplement.
+type SubmitKycPhone struct {
+	Number      string `json:"number"`
+	CountryCode string `json:"countryCode"`
+}
+
 type SubmitKycRequest struct {
-	UserEmail    string `json:"userEmail"`
-	FirstName    string `json:"firstName"`
-	LastName     string `json:"lastName"`
-	DateOfBirth  string `json:"dateOfBirth"`
-	Gender       Gender `json:"gender,omitempty"`
-	Nationality  string `json:"nationality"`
-	DocumentType IDType `json:"type"`
-	NationalID   string `json:"nationalId"`
-	IssueDate    string `json:"issueDate,omitempty"`
-	ExpiryDate   string `json:"expiryDate"`
-	AddressLine1 string `json:"addressLine1,omitempty"`
-	AddressLine2 string `json:"addressLine2,omitempty"`
-	City         string `json:"city,omitempty"`
-	State        string `json:"state,omitempty"`
-	ZipCode      string `json:"zipCode,omitempty"`
-	FrontIDImage string `json:"frontIdImage"`
-	// BackIDImage is required unless DocumentType is IDTypePassport.
-	BackIDImage      string `json:"backIdImage,omitempty"`
-	HoldIDImage      string `json:"holdIdImage"`
-	KycReport        string `json:"kycReport"`
-	PhoneNumber      string `json:"phoneNumber,omitempty"`
-	PhoneCountryCode string `json:"phoneCountryCode,omitempty"`
+	FirstName    string            `json:"firstName"`
+	LastName     string            `json:"lastName"`
+	Nationality  string            `json:"nationality"`
+	DocumentType IDType            `json:"documentType"`
+	DateOfBirth  string            `json:"dateOfBirth"`
+	Gender       Gender            `json:"gender,omitempty"`
+	NationalID   string            `json:"nationalId"`
+	IssueDate    string            `json:"issueDate,omitempty"`
+	ExpiryDate   string            `json:"expiryDate"`
+	Address      *SubmitKycAddress `json:"address,omitempty"`
+	Phone        *SubmitKycPhone   `json:"phone,omitempty"`
+	FrontImage   string            `json:"frontImage"`
+	// BackImage is required unless DocumentType is IDTypePassport.
+	BackImage      string `json:"backImage,omitempty"`
+	SelfieImage    string `json:"selfieImage"`
+	ReportDocument string `json:"reportDocument"`
 }
 
 type SubmitKycResponse struct {
-	ID        int    `json:"id"`
-	KycStatus string `json:"kycStatus"`
-	Signature string `json:"signature"`
+	Status KycStatus `json:"status"`
 }
 
-func (c *Client) SubmitKyc(ctx context.Context, req *SubmitKycRequest) (*Response[SubmitKycResponse], error) {
-	signaturePayload := fmt.Sprintf(
-		"%s|%s|%s|%s",
-		c.partnerCode,
-		req.UserEmail,
-		req.Nationality,
-		c.secretKey,
-	)
-
+// SubmitKyc submits userEmail's identity information for KYC verification,
+// POST /v3/kyc/submissions.
+func (c *Client) SubmitKyc(
+	ctx context.Context,
+	userEmail string,
+	req *SubmitKycRequest,
+) (*Response[SubmitKycResponse], error) {
 	apiRequest := request{
-		Method:      http.MethodPost,
-		Endpoint:    "/api/v2/user/submit-kyc",
-		Params:      req,
-		SigningData: []byte(signaturePayload),
-		Header:      nil,
-		Body:        nil,
-		FullURL:     "",
-		Public:      false,
+		Method:    http.MethodPost,
+		Endpoint:  "/v3/kyc/submissions",
+		Params:    req,
+		UserEmail: userEmail,
 	}
 
 	rawResponse, err := c.execute(ctx, &apiRequest)

@@ -2,7 +2,6 @@ package signer
 
 import (
 	"crypto"
-	"crypto/rand"
 	"crypto/rsa"
 	"crypto/sha256"
 	"crypto/x509"
@@ -19,28 +18,9 @@ var (
 	ErrUnsupportedPubKey = errors.New("unsupported public key type")
 )
 
-func Sign(privateKeyPEM []byte, payload []byte) (string, error) {
-	rsaPrivateKey, err := parseRSAPrivateKey(privateKeyPEM)
-	if err != nil {
-		return "", err
-	}
-
-	digest := sha256.Sum256(payload)
-
-	signature, err := rsa.SignPKCS1v15(
-		rand.Reader,
-		rsaPrivateKey,
-		crypto.SHA256,
-		digest[:],
-	)
-	if err != nil {
-		return "", fmt.Errorf("sign payload: %w", err)
-	}
-
-	return base64.StdEncoding.EncodeToString(signature), nil
-}
-
-func parseRSAPrivateKey(privateKeyPEM []byte) (*rsa.PrivateKey, error) {
+// ParsePrivateKey parses an RSA private key from a PEM block, supporting both
+// PKCS#1 and PKCS#8 encodings.
+func ParsePrivateKey(privateKeyPEM []byte) (*rsa.PrivateKey, error) {
 	block, _ := pem.Decode(privateKeyPEM)
 	if block == nil {
 		return nil, ErrInvalidPEM
@@ -65,8 +45,11 @@ func parseRSAPrivateKey(privateKeyPEM []byte) (*rsa.PrivateKey, error) {
 	return rsaKey, nil
 }
 
+// Verify checks an RSA-SHA256 (PKCS#1 v1.5) signature, base64-standard-encoded,
+// over payload using the given PEM-encoded public key. Used to verify Alix
+// webhook signatures (X-Alix-Signature).
 func Verify(publicKeyPEM []byte, payload []byte, signatureBase64 string) error {
-	rsaPublicKey, err := parseRSAPublicKey(publicKeyPEM)
+	rsaPublicKey, err := ParsePublicKey(publicKeyPEM)
 	if err != nil {
 		return err
 	}
@@ -81,7 +64,9 @@ func Verify(publicKeyPEM []byte, payload []byte, signatureBase64 string) error {
 	return rsa.VerifyPKCS1v15(rsaPublicKey, crypto.SHA256, digest[:], signature)
 }
 
-func parseRSAPublicKey(publicKeyPEM []byte) (*rsa.PublicKey, error) {
+// ParsePublicKey parses an RSA public key from a PEM block, supporting PKIX,
+// PKCS#1, and X.509 certificate encodings.
+func ParsePublicKey(publicKeyPEM []byte) (*rsa.PublicKey, error) {
 	block, _ := pem.Decode(publicKeyPEM)
 	if block == nil {
 		return nil, ErrInvalidPublicPEM

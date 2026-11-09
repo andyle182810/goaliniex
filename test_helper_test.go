@@ -13,7 +13,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/andyle182810/goaliniex"
+	"github.com/andyle182810/goaliniex/v2"
 )
 
 type mockHTTPClient struct {
@@ -23,6 +23,46 @@ type mockHTTPClient struct {
 
 func (m *mockHTTPClient) Do(_ *http.Request) (*http.Response, error) {
 	return m.response, m.err
+}
+
+// sequentialMockHTTPClient returns one canned response per call, in order.
+// Needed because every non-public endpoint call now makes two HTTP round
+// trips: the auth-token handshake, then the actual request.
+type sequentialMockHTTPClient struct {
+	responses []*http.Response
+	calls     int
+}
+
+func (m *sequentialMockHTTPClient) Do(_ *http.Request) (*http.Response, error) {
+	if m.calls >= len(m.responses) {
+		return nil, fmt.Errorf("sequentialMockHTTPClient: no more canned responses (call %d)", m.calls)
+	}
+
+	resp := m.responses[m.calls]
+	m.calls++
+
+	return resp, nil
+}
+
+func mockTokenResponseBody() string {
+	return `{"code":"SUCCESS","message":"ok","data":{"accessToken":"test-access-token","tokenType":"Bearer","expiresAt":` +
+		fmt.Sprintf("%d", time.Now().Add(time.Hour).Unix()) + `}}`
+}
+
+func newTestClientForAuthenticatedCall(endpointBody string, endpointStatus int) *goaliniex.Client {
+	mock := &sequentialMockHTTPClient{
+		responses: []*http.Response{
+			mockResponse(http.StatusOK, mockTokenResponseBody()),
+			mockResponse(endpointStatus, endpointBody),
+		},
+	}
+
+	client, err := newTestClientWithMock(mock)
+	if err != nil {
+		panic(err)
+	}
+
+	return client
 }
 
 func mockResponse(statusCode int, body string) *http.Response {
@@ -79,7 +119,6 @@ func newTestClientWithMock(httpClient goaliniex.HTTPClient) (*goaliniex.Client, 
 	return goaliniex.NewClient(
 		"https://sandbox.alixpay.com",
 		"TEST_PARTNER",
-		"TEST_SECRET",
 		testPrivateKey(),
 		goaliniex.WithHTTPClient(httpClient),
 	)
@@ -98,11 +137,6 @@ func newTestClient(t *testing.T) *goaliniex.Client {
 		t.Skip("skipping test: ALIX_PARTNER_CODE not set")
 	}
 
-	secretKey := strings.TrimSpace(os.Getenv("ALIX_SECRET_KEY"))
-	if secretKey == "" {
-		t.Skip("skipping test: ALIX_SECRET_KEY not set")
-	}
-
 	logger := slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
 		AddSource:   false,
 		Level:       slog.LevelDebug,
@@ -112,7 +146,6 @@ func newTestClient(t *testing.T) *goaliniex.Client {
 	client, err := goaliniex.NewClient(
 		"https://sandbox.alixpay.com",
 		partnerCode,
-		secretKey,
 		privateKey,
 		goaliniex.WithDebug(true),
 		goaliniex.WithLogger(logger),
@@ -229,4 +262,10 @@ func getTestBankAccountNumber(t *testing.T) string {
 	}
 
 	return bankAccountNumber
+}
+
+func getTestOrderID(t *testing.T, prefix string) string {
+	t.Helper()
+
+	return fmt.Sprintf("%s-%d", prefix, time.Now().UnixNano())
 }
