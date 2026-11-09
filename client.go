@@ -10,25 +10,28 @@ import (
 	"log/slog"
 	"net/http"
 	"net/url"
-
-	"github.com/andyle182810/goaliniex/signer"
+	"time"
 )
 
 const UserAgent = "aliniex-go-sdk"
+
+const (
+	defaultJWTExpiry      = 60 * time.Second
+	defaultTokenRenewSkew = 90 * time.Second
+)
 
 var (
 	// Client initialization errors.
 	ErrEmptyBaseURL     = errors.New("baseURL is required")
 	ErrEmptyPartnerCode = errors.New("partnerCode is required")
-	ErrEmptySecretKey   = errors.New("secretKey is required")
 	ErrEmptyPrivateKey  = errors.New("privateKey is required")
 
 	// Request lifecycle errors.
 	ErrNilRequest    = errors.New("request is nil")
 	ErrRequestBuild  = errors.New("failed to build request")
-	ErrRequestSign   = errors.New("failed to sign request")
 	ErrRequestEncode = errors.New("failed to encode request body")
 	ErrInvalidParams = errors.New("invalid request params")
+	ErrAuthFailed    = errors.New("failed to obtain access token")
 
 	// HTTP / transport errors.
 	ErrHTTPFailure      = errors.New("http request failed")
@@ -48,13 +51,15 @@ type HTTPClient interface {
 type Option func(*Client)
 
 type Client struct {
-	baseURL     string
-	partnerCode string
-	secretKey   string
-	privateKey  []byte
-	logger      Logger
-	debug       bool
-	httpClient  HTTPClient
+	baseURL        string
+	partnerCode    string
+	privateKey     []byte
+	logger         Logger
+	debug          bool
+	httpClient     HTTPClient
+	tokenCache     *tokenCache
+	jwtTTL         time.Duration
+	tokenRenewSkew time.Duration
 }
 
 func WithBaseURL(url string) Option {
@@ -81,10 +86,26 @@ func WithHTTPClient(client HTTPClient) Option {
 	}
 }
 
+// WithJWTExpiry overrides the "exp" claim lifetime of the client-assertion JWT
+// used during the auth-token handshake (not the access token's own lifetime,
+// which Alix fixes at 60 minutes).
+func WithJWTExpiry(d time.Duration) Option {
+	return func(c *Client) {
+		c.jwtTTL = d
+	}
+}
+
+// WithTokenRenewSkew sets how long before an access token's reported
+// expiresAt the client proactively renews it.
+func WithTokenRenewSkew(d time.Duration) Option {
+	return func(c *Client) {
+		c.tokenRenewSkew = d
+	}
+}
+
 func NewClient(
 	baseURL string,
 	partnerCode string,
-	secretKey string,
 	privateKey []byte,
 	opts ...Option,
 ) (*Client, error) {
@@ -96,22 +117,20 @@ func NewClient(
 		return nil, ErrEmptyPartnerCode
 	}
 
-	if secretKey == "" {
-		return nil, ErrEmptySecretKey
-	}
-
 	if len(privateKey) == 0 {
 		return nil, ErrEmptyPrivateKey
 	}
 
 	client := &Client{
-		baseURL:     baseURL,
-		partnerCode: partnerCode,
-		secretKey:   secretKey,
-		privateKey:  privateKey,
-		httpClient:  http.DefaultClient,
-		logger:      slog.Default(),
-		debug:       false,
+		baseURL:        baseURL,
+		partnerCode:    partnerCode,
+		privateKey:     privateKey,
+		httpClient:     http.DefaultClient,
+		logger:         slog.Default(),
+		debug:          false,
+		tokenCache:     newTokenCache(),
+		jwtTTL:         defaultJWTExpiry,
+		tokenRenewSkew: defaultTokenRenewSkew,
 	}
 
 	for _, opt := range opts {
@@ -142,6 +161,7 @@ func paramsToMap(params any) (map[string]any, error) {
 	}
 
 	var result map[string]any
+
 	if err := json.Unmarshal(data, &result); err != nil {
 		return nil, err
 	}
@@ -199,16 +219,6 @@ func (c *Client) buildRequest(req *request) error {
 		return fmt.Errorf("%w: %w", ErrInvalidParams, err)
 	}
 
-	if !req.Public {
-		signature, err := signer.Sign(c.privateKey, req.SigningData)
-		if err != nil {
-			return fmt.Errorf("%w: %w", ErrRequestSign, err)
-		}
-
-		bodyMap["partnerCode"] = c.partnerCode
-		bodyMap["signature"] = signature
-	}
-
 	bodyBytes, err := json.Marshal(bodyMap)
 	if err != nil {
 		return fmt.Errorf("%w: %w", ErrRequestEncode, err)
@@ -227,6 +237,15 @@ func (c *Client) buildRequest(req *request) error {
 func (c *Client) execute(ctx context.Context, req *request) ([]byte, error) {
 	if err := c.buildRequest(req); err != nil {
 		return nil, err
+	}
+
+	if !req.Public {
+		token, err := c.tokenCache.getToken(ctx, c, req.UserEmail)
+		if err != nil {
+			return nil, fmt.Errorf("%w: %w", ErrAuthFailed, err)
+		}
+
+		req.Header.Set("Authorization", "Bearer "+token)
 	}
 
 	httpReq, err := http.NewRequestWithContext(
@@ -256,13 +275,12 @@ func (c *Client) execute(ctx context.Context, req *request) ([]byte, error) {
 	c.logDebug("http response", "status", resp.StatusCode)
 	c.logDebug("http response body", "body", string(responseBody))
 
-	if resp.StatusCode >= http.StatusBadRequest {
-		return nil, fmt.Errorf(
-			"%w: status=%d body=%s",
-			ErrUnexpectedStatus,
-			resp.StatusCode,
-			string(responseBody),
-		)
+	// v3's HTTP status is only a transport hint derived from the response
+	// envelope's `code` field; callers decode the envelope and branch on
+	// `code` regardless of status, including 4xx/5xx. We only treat an empty
+	// body as a hard transport failure.
+	if len(responseBody) == 0 {
+		return nil, fmt.Errorf("%w: status=%d empty body", ErrUnexpectedStatus, resp.StatusCode)
 	}
 
 	return responseBody, nil

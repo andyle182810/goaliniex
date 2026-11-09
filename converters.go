@@ -79,19 +79,25 @@ func ParseIDType(documentType string) IDType {
 		return IDTypeIDCard
 	case "PASSPORT":
 		return IDTypePassport
+	case "DRIVERS_LICENSE":
+		return IDTypeDriversLicense
+	case "RESIDENCE_PERMIT":
+		return IDTypeResidencePermit
 	default:
 		return IDType(documentType)
 	}
 }
 
+// ParseGender normalizes free-form gender input to Alix v3's MALE/FEMALE
+// wire values.
 func ParseGender(genderStr string) Gender {
-	switch strings.ToLower(genderStr) {
-	case "m", "male":
+	switch strings.ToUpper(genderStr) {
+	case "M", "MALE":
 		return GenderMale
-	case "f", "female":
+	case "F", "FEMALE":
 		return GenderFemale
 	default:
-		return Gender(strings.ToLower(genderStr))
+		return Gender(strings.ToUpper(genderStr))
 	}
 }
 

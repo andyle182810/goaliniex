@@ -3,61 +3,47 @@ package goaliniex
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"net/http"
 )
 
+// SubmitKycSupplementRequest fields are all optional: fields sent replace
+// the stored values, the rest stay as they are.
 type SubmitKycSupplementRequest struct {
-	UserEmail        string `json:"userEmail"`
-	FirstName        string `json:"firstName,omitempty"`
-	LastName         string `json:"lastName,omitempty"`
-	DateOfBirth      string `json:"dateOfBirth,omitempty"`
-	Gender           Gender `json:"gender,omitempty"`
-	Nationality      string `json:"nationality,omitempty"`
-	DocumentType     IDType `json:"type,omitempty"`
-	NationalID       string `json:"nationalId,omitempty"`
-	IssueDate        string `json:"issueDate,omitempty"`
-	ExpiryDate       string `json:"expiryDate,omitempty"`
-	AddressLine1     string `json:"addressLine1,omitempty"`
-	AddressLine2     string `json:"addressLine2,omitempty"`
-	City             string `json:"city,omitempty"`
-	State            string `json:"state,omitempty"`
-	ZipCode          string `json:"zipCode,omitempty"`
-	FrontIDImage     string `json:"frontIdImage,omitempty"`
-	BackIDImage      string `json:"backIdImage,omitempty"`
-	HoldIDImage      string `json:"holdIdImage,omitempty"`
-	KycReport        string `json:"kycReport,omitempty"`
-	PhoneNumber      string `json:"phoneNumber,omitempty"`
-	PhoneCountryCode string `json:"phoneCountryCode,omitempty"`
+	FirstName      string            `json:"firstName,omitempty"`
+	LastName       string            `json:"lastName,omitempty"`
+	Nationality    string            `json:"nationality,omitempty"`
+	DocumentType   IDType            `json:"documentType,omitempty"`
+	DateOfBirth    string            `json:"dateOfBirth,omitempty"`
+	Gender         Gender            `json:"gender,omitempty"`
+	NationalID     string            `json:"nationalId,omitempty"`
+	IssueDate      string            `json:"issueDate,omitempty"`
+	ExpiryDate     string            `json:"expiryDate,omitempty"`
+	Address        *SubmitKycAddress `json:"address,omitempty"`
+	Phone          *SubmitKycPhone   `json:"phone,omitempty"`
+	FrontImage     string            `json:"frontImage,omitempty"`
+	BackImage      string            `json:"backImage,omitempty"`
+	SelfieImage    string            `json:"selfieImage,omitempty"`
+	ReportDocument string            `json:"reportDocument,omitempty"`
 }
 
+// SubmitKycSupplementResponse carries only Status: a supplement never
+// changes the user's KYC status.
 type SubmitKycSupplementResponse struct {
-	ID                  int    `json:"id"`
-	KycStatus           string `json:"kycStatus"`
-	KycSupplementStatus string `json:"kycSupplementStatus"`
-	Signature           string `json:"signature"`
+	Status KycStatus `json:"status"`
 }
 
+// SubmitKycSupplement adds to or corrects userEmail's submitted KYC profile,
+// POST /v3/kyc/supplements.
 func (c *Client) SubmitKycSupplement(
 	ctx context.Context,
+	userEmail string,
 	req *SubmitKycSupplementRequest,
 ) (*Response[SubmitKycSupplementResponse], error) {
-	signaturePayload := fmt.Sprintf(
-		"%s|%s|%s",
-		c.partnerCode,
-		req.UserEmail,
-		c.secretKey,
-	)
-
 	apiRequest := request{
-		Method:      http.MethodPost,
-		Endpoint:    "/api/v2/user/submit-kyc-supplement",
-		Params:      req,
-		SigningData: []byte(signaturePayload),
-		Header:      nil,
-		Body:        nil,
-		FullURL:     "",
-		Public:      false,
+		Method:    http.MethodPost,
+		Endpoint:  "/v3/kyc/supplements",
+		Params:    req,
+		UserEmail: userEmail,
 	}
 
 	rawResponse, err := c.execute(ctx, &apiRequest)

@@ -1,15 +1,18 @@
 package signer_test
 
 import (
+	"crypto"
 	"crypto/rand"
 	"crypto/rsa"
+	"crypto/sha256"
 	"crypto/x509"
+	"encoding/base64"
 	"encoding/pem"
 	"errors"
 	"os"
 	"testing"
 
-	"github.com/andyle182810/goaliniex/signer"
+	"github.com/andyle182810/goaliniex/v2/signer"
 )
 
 func generateTestKeyPair(t *testing.T) ([]byte, []byte) {
@@ -63,18 +66,36 @@ func generatePKCS1PublicKey(t *testing.T) ([]byte, []byte) {
 	return privateKeyPEM, publicKeyPEM
 }
 
+// signPayload signs payload with the PEM-encoded RSA private key using
+// RSA-SHA256 PKCS#1 v1.5, mirroring what signer.Verify expects. This replaces
+// the deleted signer.Sign helper for test fixture generation.
+func signPayload(t *testing.T, privateKeyPEM []byte, payload []byte) string {
+	t.Helper()
+
+	rsaPrivateKey, err := signer.ParsePrivateKey(privateKeyPEM)
+	if err != nil {
+		t.Fatalf("parse private key: %v", err)
+	}
+
+	digest := sha256.Sum256(payload)
+
+	signature, err := rsa.SignPKCS1v15(rand.Reader, rsaPrivateKey, crypto.SHA256, digest[:])
+	if err != nil {
+		t.Fatalf("sign payload: %v", err)
+	}
+
+	return base64.StdEncoding.EncodeToString(signature)
+}
+
 func TestVerify_ValidSignature(t *testing.T) {
 	t.Parallel()
 
 	privateKeyPEM, publicKeyPEM := generateTestKeyPair(t)
 	payload := []byte("test payload data")
 
-	signature, err := signer.Sign(privateKeyPEM, payload)
-	if err != nil {
-		t.Fatalf("sign: %v", err)
-	}
+	signature := signPayload(t, privateKeyPEM, payload)
 
-	err = signer.Verify(publicKeyPEM, payload, signature)
+	err := signer.Verify(publicKeyPEM, payload, signature)
 	if err != nil {
 		t.Errorf("verify valid signature: %v", err)
 	}
@@ -98,14 +119,11 @@ func TestVerify_TamperedPayload(t *testing.T) {
 	privateKeyPEM, publicKeyPEM := generateTestKeyPair(t)
 	payload := []byte("original payload")
 
-	signature, err := signer.Sign(privateKeyPEM, payload)
-	if err != nil {
-		t.Fatalf("sign: %v", err)
-	}
+	signature := signPayload(t, privateKeyPEM, payload)
 
 	tamperedPayload := []byte("tampered payload")
 
-	err = signer.Verify(publicKeyPEM, tamperedPayload, signature)
+	err := signer.Verify(publicKeyPEM, tamperedPayload, signature)
 	if err == nil {
 		t.Error("expected error for tampered payload")
 	}
@@ -141,12 +159,9 @@ func TestVerify_WrongPublicKey(t *testing.T) {
 	_, wrongPublicKeyPEM := generateTestKeyPair(t)
 	payload := []byte("test payload")
 
-	signature, err := signer.Sign(privateKeyPEM, payload)
-	if err != nil {
-		t.Fatalf("sign: %v", err)
-	}
+	signature := signPayload(t, privateKeyPEM, payload)
 
-	err = signer.Verify(wrongPublicKeyPEM, payload, signature)
+	err := signer.Verify(wrongPublicKeyPEM, payload, signature)
 	if err == nil {
 		t.Error("expected error when verifying with wrong public key")
 	}
@@ -158,12 +173,9 @@ func TestVerify_PKCS1PublicKey(t *testing.T) {
 	privateKeyPEM, publicKeyPEM := generatePKCS1PublicKey(t)
 	payload := []byte("test payload for PKCS1")
 
-	signature, err := signer.Sign(privateKeyPEM, payload)
-	if err != nil {
-		t.Fatalf("sign: %v", err)
-	}
+	signature := signPayload(t, privateKeyPEM, payload)
 
-	err = signer.Verify(publicKeyPEM, payload, signature)
+	err := signer.Verify(publicKeyPEM, payload, signature)
 	if err != nil {
 		t.Errorf("verify with PKCS1 public key: %v", err)
 	}
@@ -175,12 +187,9 @@ func TestVerify_EmptyPayload(t *testing.T) {
 	privateKeyPEM, publicKeyPEM := generateTestKeyPair(t)
 	payload := []byte{}
 
-	signature, err := signer.Sign(privateKeyPEM, payload)
-	if err != nil {
-		t.Fatalf("sign empty payload: %v", err)
-	}
+	signature := signPayload(t, privateKeyPEM, payload)
 
-	err = signer.Verify(publicKeyPEM, payload, signature)
+	err := signer.Verify(publicKeyPEM, payload, signature)
 	if err != nil {
 		t.Errorf("verify empty payload: %v", err)
 	}
@@ -233,12 +242,9 @@ func TestSignAndVerify_RoundTrip(t *testing.T) {
 		t.Run(testCase.name, func(t *testing.T) {
 			t.Parallel()
 
-			signature, err := signer.Sign(privateKeyPEM, testCase.payload)
-			if err != nil {
-				t.Fatalf("sign: %v", err)
-			}
+			signature := signPayload(t, privateKeyPEM, testCase.payload)
 
-			err = signer.Verify(publicKeyPEM, testCase.payload, signature)
+			err := signer.Verify(publicKeyPEM, testCase.payload, signature)
 			if err != nil {
 				t.Errorf("verify: %v", err)
 			}

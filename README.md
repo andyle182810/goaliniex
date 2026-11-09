@@ -12,28 +12,27 @@ It is designed for simplicity, correctness, and ease of integration in productio
 - 🚀 **Simple & Idiomatic API**
   Clean, readable interfaces that follow Go best practices.
 
-- 🔐 **Built-in Request Signing**
-  Secure RSA-based request signing handled internally.
+- 🔐 **Secure Bearer-Token Auth**
+  RSA-signed JWT client assertions exchanged for short-lived bearer access tokens, cached and auto-renewed per user.
 
 - 🧵 **Context Support**
   Full support for `context.Context` for cancellation and timeouts.
 
-- 🪶 **Zero External Dependencies**
-  Uses only the Go standard library.
+- 🪶 **Minimal Dependencies**
+  Only `github.com/golang-jwt/jwt/v5` for RS256 client-assertion signing; otherwise standard library.
 
 ## 📦 Installation
 
 ```bash
-go get github.com/andyle182810/goaliniex
+go get github.com/andyle182810/goaliniex/v2
 ```
 
 ## 🚀 Quick Start
 
 ```go
 client, err := goaliniex.NewClient(
-    "https://api.aliniex.com",
+    "https://api.alixpay.com",
     partnerCode,
-    secretKey,
     privateKeyPEM,
     goaliniex.WithDebug(true),
 )
@@ -41,17 +40,12 @@ if err != nil {
     log.Fatal(err)
 }
 
-resp, err := client.GetKycInformation(
-    context.Background(),
-    &goaliniex.KycInformationRequest{
-        UserEmail: "user@example.com",
-    },
-)
+resp, err := client.GetKycStatus(context.Background(), "user@example.com")
 if err != nil {
     log.Fatal(err)
 }
 
-fmt.Println("KYC status:", resp.Data.KycStatus)
+fmt.Println("KYC status:", resp.Data.Status)
 ```
 
 ## 🧪 Testing
@@ -62,8 +56,6 @@ Required environment variables:
 
 ```bash
 ALIX_PARTNER_CODE=your_partner_code
-ALIX_SECRET_KEY=your_secret_key
-ALIX_WEBHOOK_SECRET_KEY=your_webhook_secret_key
 ALIX_TEST_EMAIL=your_test_email@example.com
 ALIX_TEST_EMAIL_2=your_secondary_test_email@example.com  # optional
 ```
